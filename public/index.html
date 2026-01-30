@@ -481,16 +481,103 @@
     }
 
     /* ========================================
+       Input Mode Toggle (Segment Control)
+    ======================================== */
+    .input-mode-toggle {
+      display: flex;
+      background: var(--gray-100);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      position: relative;
+      margin-bottom: var(--space-lg);
+    }
+
+    .input-mode-toggle::before {
+      content: '';
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: calc(50% - 4px);
+      height: calc(100% - 8px);
+      background: var(--white);
+      border-radius: calc(var(--radius-md) - 4px);
+      box-shadow: var(--shadow-sm);
+      transition: transform var(--duration-normal) cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .input-mode-toggle.mode-direct::before {
+      transform: translateX(100%);
+    }
+
+    .toggle-btn {
+      flex: 1;
+      padding: var(--space-sm) var(--space-md);
+      font-family: var(--font-primary);
+      font-size: var(--text-body);
+      font-weight: var(--font-semibold);
+      color: var(--gray-500);
+      background: transparent;
+      border: none;
+      border-radius: calc(var(--radius-md) - 4px);
+      cursor: pointer;
+      position: relative;
+      z-index: 1;
+      transition: color var(--duration-normal) var(--easing);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+    }
+
+    .toggle-btn:hover {
+      color: var(--gray-700);
+    }
+
+    .toggle-btn.active {
+      color: var(--primary-600);
+    }
+
+    .toggle-btn-icon {
+      font-size: var(--text-h5);
+    }
+
+    /* ========================================
+       Input Panels Container
+    ======================================== */
+    .input-panels-container {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .input-panels-wrapper {
+      display: flex;
+      transition: transform var(--duration-normal) cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .input-panels-wrapper.mode-direct {
+      transform: translateX(-50%);
+    }
+
+    .input-panel {
+      min-width: 100%;
+      flex-shrink: 0;
+    }
+
+    /* ========================================
        File Upload
     ======================================== */
     .file-upload {
-      margin-top: var(--space-md);
-      padding: var(--space-lg);
+      padding: var(--space-2xl) var(--space-lg);
       border: 2px dashed var(--gray-300);
       border-radius: var(--radius-md);
       text-align: center;
       cursor: pointer;
       transition: all var(--duration-normal) var(--easing);
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
     .file-upload:hover,
@@ -520,6 +607,37 @@
     .file-upload-hint {
       font-size: var(--text-body-sm);
       color: var(--gray-400);
+    }
+
+    /* File list display */
+    .file-list {
+      margin-top: var(--space-md);
+      text-align: left;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .file-list-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      margin-bottom: var(--space-xs);
+      font-size: var(--text-body-sm);
+    }
+
+    .file-list-item-icon {
+      color: var(--success);
+    }
+
+    .file-list-item-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     /* ========================================
@@ -820,6 +938,15 @@
       .card:hover {
         transform: none;
       }
+
+      .toggle-btn {
+        font-size: var(--text-body-sm);
+        padding: var(--space-sm);
+      }
+
+      .toggle-btn-icon {
+        font-size: var(--text-body);
+      }
     }
   </style>
 </head>
@@ -839,33 +966,58 @@
               <h2 class="card-title">코드 입력</h2>
             </div>
             
-            <div class="form-group">
-              <label for="codeInput" class="sr-only">분석할 코드 입력...</label>
-              <textarea 
-                id="codeInput" 
-                class="form-textarea" 
-                placeholder="분석할 코드 입력"
-                aria-label="분석할 코드를 입력하세요."
-              ></textarea>
+            <!-- Input Mode Toggle -->
+            <div class="input-mode-toggle" id="inputModeToggle">
+              <button type="button" class="toggle-btn active" id="toggleFile" aria-pressed="true">
+                <span class="toggle-btn-icon">📁</span>
+                <span>파일 첨부</span>
+              </button>
+              <button type="button" class="toggle-btn" id="toggleDirect" aria-pressed="false">
+                <span class="toggle-btn-icon">✏️</span>
+                <span>직접 입력</span>
+              </button>
             </div>
 
-            <div 
-              class="file-upload" 
-              tabindex="0" 
-              role="button" 
-              aria-label="파일 업로드" 
-              id="fileUploadArea"
-            >
-              <input 
-                type="file" 
-                id="fileInput" 
-                accept=".js,.ts,.jsx,.tsx,.py,.php,.html,.css,.json,.txt" 
-                aria-label="코드 파일 선택"
-                multiple
-              >
-              <div class="file-upload-icon">📁</div>
-              <div class="file-upload-text" id="fileUploadText">파일을 드래그하거나 클릭하여 업로드 (여러 파일 선택 가능)</div>
-              <div class="file-upload-hint">.js, .ts, .jsx, .tsx, .py, .php, .html, .css, .json, .txt, .rs, .cpp, .go, .rb, .cs, .yaml, .yml</div>
+            <!-- Input Panels -->
+            <div class="input-panels-container">
+              <div class="input-panels-wrapper" id="inputPanelsWrapper">
+                <!-- File Upload Panel -->
+                <div class="input-panel" id="filePanel">
+                  <div 
+                    class="file-upload" 
+                    tabindex="0" 
+                    role="button" 
+                    aria-label="파일 업로드" 
+                    id="fileUploadArea"
+                  >
+                    <input 
+                      type="file" 
+                      id="fileInput" 
+                      accept=".js,.ts,.jsx,.tsx,.py,.php,.html,.css,.json,.txt" 
+                      aria-label="코드 파일 선택"
+                      multiple
+                    >
+                    <div class="file-upload-icon">📁</div>
+                    <div class="file-upload-text" id="fileUploadText">파일을 드래그하거나 클릭하여 업로드</div>
+                    <div class="file-upload-hint">.js, .ts, .jsx, .tsx, .py, .php, .html, .css, .json, .txt, .rs, .cpp, .go, .rb, .cs, .yaml, .yml</div>
+                    <div class="file-list" id="fileList"></div>
+                  </div>
+                </div>
+
+                <!-- Direct Input Panel -->
+                <div class="input-panel" id="directPanel">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label for="codeInput" class="sr-only">분석할 코드 입력...</label>
+                    <textarea 
+                      id="codeInput" 
+                      class="form-textarea" 
+                      placeholder="분석할 코드를 직접 입력하세요..."
+                      aria-label="분석할 코드를 입력하세요."
+                      style="min-height: 300px;"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <button class="btn btn-primary btn-lg btn-full" id="analyzeBtn" style="margin-top: var(--space-lg);">
@@ -893,14 +1045,67 @@
 
   <script>
     (function() {
+      // DOM Elements
       var codeInput = document.getElementById("codeInput");
       var fileInput = document.getElementById("fileInput");
       var analyzeBtn = document.getElementById("analyzeBtn");
       var resultContent = document.getElementById("resultContent");
       var fileUploadArea = document.getElementById("fileUploadArea");
+      var inputModeToggle = document.getElementById("inputModeToggle");
+      var inputPanelsWrapper = document.getElementById("inputPanelsWrapper");
+      var toggleFile = document.getElementById("toggleFile");
+      var toggleDirect = document.getElementById("toggleDirect");
+      var fileList = document.getElementById("fileList");
+
+      // State management
+      var currentMode = "file"; // "file" or "direct"
+      var fileContent = ""; // Stores file upload content
+      var directContent = ""; // Stores direct input content
+      var loadedFiles = []; // Stores loaded file names
+
+      // Mode toggle handlers
+      function setMode(mode) {
+        currentMode = mode;
+        
+        // Update toggle buttons
+        if (mode === "file") {
+          toggleFile.classList.add("active");
+          toggleFile.setAttribute("aria-pressed", "true");
+          toggleDirect.classList.remove("active");
+          toggleDirect.setAttribute("aria-pressed", "false");
+          inputModeToggle.classList.remove("mode-direct");
+          inputPanelsWrapper.classList.remove("mode-direct");
+        } else {
+          toggleDirect.classList.add("active");
+          toggleDirect.setAttribute("aria-pressed", "true");
+          toggleFile.classList.remove("active");
+          toggleFile.setAttribute("aria-pressed", "false");
+          inputModeToggle.classList.add("mode-direct");
+          inputPanelsWrapper.classList.add("mode-direct");
+        }
+      }
+
+      toggleFile.addEventListener("click", function() {
+        // Save direct input content before switching
+        directContent = codeInput.value;
+        setMode("file");
+      });
+
+      toggleDirect.addEventListener("click", function() {
+        setMode("direct");
+        // Restore saved direct input content
+        codeInput.value = directContent;
+      });
+
+      // Save direct input content on change
+      codeInput.addEventListener("input", function() {
+        directContent = codeInput.value;
+      });
 
       // File upload click handler
-      fileUploadArea.addEventListener("click", function() {
+      fileUploadArea.addEventListener("click", function(e) {
+        // Prevent click on file list items from triggering file input
+        if (e.target.closest(".file-list")) return;
         fileInput.click();
       });
 
@@ -912,12 +1117,35 @@
         }
       });
 
+      // Function to update file list UI
+      function updateFileListUI() {
+        if (loadedFiles.length === 0) {
+          fileList.innerHTML = "";
+          document.getElementById("fileUploadText").textContent = "파일을 드래그하거나 클릭하여 업로드";
+          return;
+        }
+
+        var html = loadedFiles.map(function(name) {
+          return '<div class="file-list-item">' +
+            '<span class="file-list-item-icon">✅</span>' +
+            '<span class="file-list-item-name">' + escapeHtml(name) + '</span>' +
+          '</div>';
+        }).join("");
+        
+        fileList.innerHTML = html;
+        
+        if (loadedFiles.length === 1) {
+          document.getElementById("fileUploadText").textContent = "✅ 1개 파일 로드됨";
+        } else {
+          document.getElementById("fileUploadText").textContent = "✅ " + loadedFiles.length + "개 파일 로드됨";
+        }
+      }
+
       // Function to process multiple files
       function processFiles(files) {
         if (!files || files.length === 0) return;
         
         var fileArray = Array.from(files);
-        var fileNames = fileArray.map(function(f) { return f.name; });
         
         // Read all files and combine their contents
         Promise.all(fileArray.map(function(file) {
@@ -933,14 +1161,11 @@
             return "// ===== " + result.name + " =====\n" + result.content;
           }).join("\n\n");
           
-          codeInput.value = combinedContent;
+          fileContent = combinedContent;
+          loadedFiles = results.map(function(r) { return r.name; });
           
-          // Update UI text
-          if (fileNames.length === 1) {
-            document.getElementById("fileUploadText").textContent = "✅ " + fileNames[0] + " 로드됨";
-          } else {
-            document.getElementById("fileUploadText").textContent = "✅ " + fileNames.length + "개 파일 로드됨: " + fileNames.join(", ");
-          }
+          // Update UI
+          updateFileListUI();
         });
       }
 
@@ -974,10 +1199,20 @@
       });
 
       function analyzeCode() {
-        var code = codeInput.value.trim();
+        // Get code based on current mode
+        var code = "";
+        if (currentMode === "file") {
+          code = fileContent.trim();
+        } else {
+          code = directContent.trim();
+        }
         
         if (!code) {
-          alert("분석할 코드를 입력해주세요.");
+          if (currentMode === "file") {
+            alert("분석할 파일을 업로드해주세요.");
+          } else {
+            alert("분석할 코드를 입력해주세요.");
+          }
           return;
         }
 
