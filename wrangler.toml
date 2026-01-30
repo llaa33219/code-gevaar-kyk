@@ -2,6 +2,10 @@ name = "code-gevaar-kyk"
 main = "src/worker.js"
 compatibility_date = "2025-01-30"
 
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
 [vars]
 # DeepSeek API 키는 Cloudflare Dashboard에서 Secrets로 설정하세요
 # wrangler secret put DEEPSEEK_API_KEY
