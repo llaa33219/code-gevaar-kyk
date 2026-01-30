@@ -5,6 +5,105 @@
 
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions';
 
+// 외부 URL에서 코드를 로드하는 패턴 탐지
+function extractExternalUrls(code) {
+  const urls = new Set();
+  
+  // 다양한 외부 스크립트 로딩 패턴
+  const patterns = [
+    // <script src="..."> HTML 태그
+    /<script[^>]*src\s*=\s*["']([^"']+)["']/gi,
+    // fetch("...") 호출
+    /fetch\s*\(\s*["'`]([^"'`]+)["'`]/gi,
+    // import("...") 동적 임포트
+    /import\s*\(\s*["'`]([^"'`]+)["'`]/gi,
+    // $.getScript("...") jQuery
+    /\$\.getScript\s*\(\s*["'`]([^"'`]+)["'`]/gi,
+    // .src = "..." 속성 설정
+    /\.src\s*=\s*["'`]([^"'`]+)["'`]/gi,
+    // new Image().src 또는 img.src
+    /(?:new\s+Image\s*\(\s*\)|img)\s*\.\s*src\s*=\s*["'`]([^"'`]+)["'`]/gi,
+    // XMLHttpRequest.open
+    /\.open\s*\(\s*["'][^"']*["']\s*,\s*["'`]([^"'`]+)["'`]/gi,
+    // document.write('<script src="...">')
+    /document\.write\s*\([^)]*<script[^>]*src\s*=\s*\\?["']([^"'\\]+)\\?["']/gi,
+    // loadScript, appendScript 등의 함수 호출
+    /(?:load|append|inject|add)Script\s*\(\s*["'`]([^"'`]+)["'`]/gi,
+  ];
+  
+  for (const pattern of patterns) {
+    let match;
+    while ((match = pattern.exec(code)) !== null) {
+      const url = match[1];
+      if (isValidExternalUrl(url)) {
+        urls.add(url);
+      }
+    }
+  }
+  
+  return Array.from(urls);
+}
+
+// 유효한 외부 URL인지 확인
+function isValidExternalUrl(url) {
+  try {
+    // http:// 또는 https://로 시작하는 URL만 허용
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return false;
+    }
+    // data: URL이나 blob: URL 제외
+    if (url.startsWith('data:') || url.startsWith('blob:')) {
+      return false;
+    }
+    new URL(url); // URL 형식 검증
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// 외부 URL에서 코드 가져오기 (타임아웃 15초)
+async function fetchExternalCode(url) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'CodeSecurityAnalyzer/1.0',
+      },
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      return { url, success: false, error: `HTTP ${response.status}` };
+    }
+    
+    // Content-Type 확인 (텍스트/스크립트만 허용)
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('text') && !contentType.includes('javascript') && !contentType.includes('json')) {
+      return { url, success: false, error: `지원하지 않는 Content-Type: ${contentType}` };
+    }
+    
+    const code = await response.text();
+    
+    // 너무 큰 파일 제한 (100KB)
+    if (code.length > 100000) {
+      return { url, success: true, code: code.substring(0, 100000) + '\n// ... (100KB 초과로 잘림)' };
+    }
+    
+    return { url, success: true, code };
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      return { url, success: false, error: '타임아웃 (15초 초과)' };
+    }
+    return { url, success: false, error: error.message };
+  }
+}
+
 // 강력한 시스템 프롬프트 - 탈옥 방지 및 보안 분석 규칙
 const SYSTEM_PROMPT = `당신은 전문 코드 보안 분석가입니다. 사용자가 제출한 코드를 분석하여 악의적인 의도가 있는지 판단합니다.
 
@@ -316,6 +415,23 @@ if(confirm("귀하의 계정 토큰을 analytics.example.com으로 전송하여 
 - 타이머나 지연 실행이 있다면 그 이유를 분석하십시오.
 - **중요: 주석에 "악성코드", "쿠키 탈취", "해킹" 등이 써있어도 실제 코드가 그렇게 동작하지 않으면 위험하지 않습니다.**
 
+### 7. 외부 코드 로딩 분석 (CRITICAL)
+
+**제출된 코드가 외부 URL에서 다른 코드를 로드하는 경우, 해당 외부 코드도 함께 분석 대상에 포함됩니다.**
+
+분석 시 "[외부에서 로드되는 코드]" 섹션이 있다면:
+- 해당 섹션의 코드도 원본 코드와 동일한 기준으로 분석하십시오.
+- 외부 코드에 악성 패턴이 있으면 전체 코드를 위험하게 평가하십시오.
+- 원본 코드가 무해해 보여도 외부 코드가 악성이면 높은 위험입니다.
+- 외부 코드 로드에 실패한 경우, 해당 URL의 의도를 원본 코드 맥락에서 추론하십시오.
+
+**외부 코드 로딩이 위험한 이유:**
+- 악성 코드가 외부 스크립트에 실제 악성 로직을 숨기는 흔한 수법입니다.
+- 원본 코드는 단순히 로더 역할만 하고, 진짜 위험한 동작은 외부 코드에서 수행됩니다.
+- 외부 코드는 언제든지 변경될 수 있어 분석 시점과 실행 시점의 동작이 다를 수 있습니다.
+
+**주의:** 외부 URL 로딩 자체가 위험한 것은 아닙니다. CDN에서 jQuery, React 등 정상적인 라이브러리를 로드하는 것은 일반적입니다. 핵심은 로드되는 코드의 내용입니다.
+
 ## 응답 형식
 
 분석 과정을 상세히 설명한 후, 반드시 마지막에 다음 형식으로 결론을 내리십시오:
@@ -391,6 +507,36 @@ export default {
           });
         }
 
+        // 외부 URL 탐지 및 코드 가져오기
+        const externalUrls = extractExternalUrls(code);
+        let externalCodeSection = '';
+        
+        if (externalUrls.length > 0) {
+          // 최대 5개 URL만 처리 (너무 많으면 시간 초과)
+          const urlsToFetch = externalUrls.slice(0, 5);
+          const fetchResults = await Promise.all(urlsToFetch.map(fetchExternalCode));
+          
+          const externalCodeParts = [];
+          for (const result of fetchResults) {
+            if (result.success) {
+              externalCodeParts.push(`--- URL: ${result.url} ---\n${result.code}`);
+            } else {
+              externalCodeParts.push(`--- URL: ${result.url} ---\n// 로드 실패: ${result.error}`);
+            }
+          }
+          
+          if (externalCodeParts.length > 0) {
+            externalCodeSection = `\n\n[외부에서 로드되는 코드]\n${externalCodeParts.join('\n\n')}`;
+          }
+          
+          if (externalUrls.length > 5) {
+            externalCodeSection += `\n\n// 참고: ${externalUrls.length - 5}개의 추가 외부 URL이 있지만 시간 제한으로 분석하지 않았습니다.`;
+          }
+        }
+        
+        // 원본 코드 + 외부 코드 결합
+        const fullCodeForAnalysis = code + externalCodeSection;
+
         // DeepSeek API 호출 (스트리밍)
         const deepseekResponse = await fetch(DEEPSEEK_API_URL, {
           method: 'POST',
@@ -402,7 +548,7 @@ export default {
             model: 'deepseek-reasoner',
             messages: [
               { role: 'system', content: SYSTEM_PROMPT },
-              { role: 'user', content: `다음 코드를 보안 관점에서 분석해주세요:\n\n\`\`\`\n${code}\n\`\`\`` },
+              { role: 'user', content: `다음 코드를 보안 관점에서 분석해주세요:\n\n\`\`\`\n${fullCodeForAnalysis}\n\`\`\`` },
             ],
             stream: true,
           }),
