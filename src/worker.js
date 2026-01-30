@@ -808,8 +808,8 @@ function getIndexHTML() {
     }
 
     function renderFinalResult(result) {
-      let riskClass = 'risk-low';
-      let riskLabel = '✓ 안전';
+      var riskClass = 'risk-low';
+      var riskLabel = '✓ 안전';
       
       if (result.score > 80) {
         riskClass = 'risk-critical';
@@ -825,13 +825,11 @@ function getIndexHTML() {
         riskLabel = '△ 낮은 위험';
       }
 
-      return \`
-        <div class="final-result">
-          <div class="risk-label">\${riskLabel}</div>
-          <div class="risk-score \${riskClass}">\${result.score}/100</div>
-          <div class="risk-comment">"\${escapeHtml(result.comment)}"</div>
-        </div>
-      \`;
+      return '<div class="final-result">' +
+        '<div class="risk-label">' + riskLabel + '</div>' +
+        '<div class="risk-score ' + riskClass + '">' + result.score + '/100</div>' +
+        '<div class="risk-comment">"' + escapeHtml(result.comment) + '"</div>' +
+      '</div>';
     }
 
     function escapeHtml(text) {
