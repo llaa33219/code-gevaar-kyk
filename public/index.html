@@ -360,7 +360,7 @@
     }
 
     .card-title {
-      font-size: var(--text-h5);
+      font-size: var(--text-h3);
       font-weight: var(--font-semibold);
       color: var(--gray-800);
     }
@@ -824,59 +824,28 @@
   </style>
 </head>
 <body>
-  <!-- Navigation Bar -->
-  <nav class="navbar">
-    <div class="container">
-      <a href="#" class="navbar-logo">
-        <span>🛡️</span>
-        <span>코드 보안 분석기</span>
-      </a>
-      <ul class="navbar-nav">
-        <li><a href="#analyzer" class="navbar-link active">분석하기</a></li>
-      </ul>
-    </div>
-  </nav>
 
   <main>
-    <!-- Hero Section -->
-    <section class="hero">
-      <div class="container">
-        <h1 class="hero-title">
-          AI로 <span class="highlight">악성 코드</span>를<br>탐지하세요
-        </h1>
-        <p class="hero-subtitle">
-          DeepSeek AI가 코드를 분석하여 계정 탈취, 데이터 유출 등 잠재적 위협을 탐지합니다
-        </p>
-      </div>
-    </section>
-
     <!-- Main Content -->
     <section class="main-section" id="analyzer">
+      <div class="hero">
+        <h1 class="hero-title">AI를 이용한 <span class="highlight">코드 보안 분석기</span></h1>
+      </div>
       <div class="container">
-        <!-- Warning Banner -->
-        <div class="alert alert-warning">
-          <span class="alert-icon">⚠️</span>
-          <div class="alert-content">
-            <div class="alert-title">주의사항</div>
-            <div>이 도구는 AI 기반 분석을 제공하며, 100% 정확한 탐지를 보장하지 않습니다. 의심스러운 코드는 절대 실행하지 마세요.</div>
-          </div>
-        </div>
-
         <div class="main-grid">
           <!-- Input Panel -->
           <div class="card card-highlight card-static">
             <div class="card-header">
-              <span class="card-icon">📝</span>
               <h2 class="card-title">코드 입력</h2>
             </div>
             
             <div class="form-group">
-              <label for="codeInput" class="sr-only">분석할 코드 입력</label>
+              <label for="codeInput" class="sr-only">분석할 코드 입력...</label>
               <textarea 
                 id="codeInput" 
                 class="form-textarea" 
-                placeholder="분석할 코드를 여기에 붙여넣으세요..."
-                aria-label="분석할 코드를 입력하세요"
+                placeholder="분석할 코드 입력"
+                aria-label="분석할 코드를 입력하세요."
               ></textarea>
             </div>
 
@@ -895,11 +864,10 @@
               >
               <div class="file-upload-icon">📁</div>
               <div class="file-upload-text" id="fileUploadText">파일을 드래그하거나 클릭하여 업로드</div>
-              <div class="file-upload-hint">.js, .ts, .jsx, .tsx, .py, .php, .html, .css, .json, .txt</div>
+              <div class="file-upload-hint">.js, .ts, .jsx, .tsx, .py, .php, .html, .css, .json, .txt, .rs, .cpp, .go, .rb, .cs, .yaml, .yml</div>
             </div>
 
             <button class="btn btn-primary btn-lg btn-full" id="analyzeBtn" style="margin-top: var(--space-lg);">
-              <span>🔍</span>
               <span>분석 시작</span>
             </button>
           </div>
@@ -907,13 +875,12 @@
           <!-- Result Panel -->
           <div class="card result-panel card-static">
             <div class="card-header">
-              <span class="card-icon">📊</span>
               <h2 class="card-title">분석 결과</h2>
             </div>
             <div class="result-content" id="resultContent" aria-live="polite" aria-atomic="false">
               <div class="empty-state">
-                <div class="empty-state-icon">🔐</div>
-                <div class="empty-state-text">코드를 입력하고 분석을 시작하세요</div>
+                <div class="empty-state-icon">🤔</div>
+                <div class="empty-state-text">분석 시작 버튼을 눌러 코드를 분석해 보세요.</div>
               </div>
             </div>
           </div>
@@ -922,12 +889,6 @@
     </section>
   </main>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container">
-      <p>© 2024 코드 보안 분석기 · AI 기반 보안 분석 도구</p>
-    </div>
-  </footer>
 
   <script>
     (function() {
