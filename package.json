@@ -1,0 +1,18 @@
+{
+  "name": "code-security-analyzer",
+  "version": "1.0.0",
+  "description": "AI 기반 코드 보안 분석기 - DeepSeek Reasoner를 사용하여 악성 코드를 탐지합니다",
+  "main": "src/worker.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "keywords": ["security", "code-analysis", "cloudflare-workers", "deepseek"],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}
