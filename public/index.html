@@ -4,113 +4,163 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>코드 보안 분석기</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
   <style>
+    /* ========================================
+       CSS Variables - Design System
+    ======================================== */
+    :root {
+      /* Primary Colors */
+      --primary-50: #eef6ff;
+      --primary-100: #b9d6fd;
+      --primary-500: #007BFF;
+      --primary-600: #005BDD;
+      --primary-700: #193694;
+      
+      /* Secondary Colors */
+      --secondary-50: #e3ffe3;
+      --secondary-500: #00d200;
+      --secondary-600: #00a100;
+      
+      /* Neutral Colors */
+      --white: #ffffff;
+      --gray-50: #fafafa;
+      --gray-100: #f5f5f5;
+      --gray-200: #e8e8e8;
+      --gray-300: #d6d6d6;
+      --gray-400: #a6a6a6;
+      --gray-500: #757575;
+      --gray-600: #575757;
+      --gray-700: #454545;
+      --gray-800: #2b2b2b;
+      --gray-900: #1c1c1c;
+      --black: #000000;
+      
+      /* Semantic Colors */
+      --success: #00ef38;
+      --warning: #ffdd00;
+      --error: #df0013;
+      --info: #c9c9c9;
+      
+      /* Typography */
+      --font-primary: "CloudSansCode", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: 'Fira Code', 'Monaco', 'Menlo', monospace;
+      
+      /* Font Sizes */
+      --text-display: 72px;
+      --text-h1: 56px;
+      --text-h2: 36px;
+      --text-h3: 28px;
+      --text-h4: 24px;
+      --text-h5: 20px;
+      --text-h6: 18px;
+      --text-body-xl: 20px;
+      --text-body-lg: 30px;
+      --text-body: 22px;
+      --text-body-sm: 16px;
+      --text-caption: 12px;
+      
+      /* Font Weights */
+      --font-light: 300;
+      --font-regular: 400;
+      --font-medium: 500;
+      --font-semibold: 600;
+      --font-bold: 700;
+      --font-extrabold: 800;
+      
+      /* Spacing */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+      --space-2xl: 48px;
+      --space-3xl: 64px;
+      --space-4xl: 80px;
+      --space-5xl: 96px;
+      --space-6xl: 128px;
+      
+      /* Shadows (Hard Shadow - Neobrutalism) */
+      --shadow-xs: 8px 8px 0px rgba(0,0,0,0.2);
+      --shadow-sm: 2px 2px 0px rgba(0,0,0,0.2);
+      --shadow-md: 4px 4px 0px rgba(0,0,0,0.2);
+      --shadow-lg: 10px 10px 0px rgba(0,0,0,0.2);
+      --shadow-xl: 20px 20px 0px rgba(0,0,0,0.2);
+      --shadow-2xl: 25px 25px 0px rgba(0,0,0,0.2);
+      
+      /* Border Radius */
+      --radius-sm: 14px;
+      --radius-md: 20px;
+      --radius-lg: 26px;
+      --radius-xl: 30px;
+      --radius-full: 9999px;
+      
+      /* Transitions */
+      --duration-fast: 0.15s;
+      --duration-normal: 0.3s;
+      --duration-slow: 0.5s;
+      --easing: ease;
+      
+      /* Layout */
+      --container-max-width: 1280px;
+      --container-padding: var(--space-xl);
+      --navbar-height: 72px;
+    }
+    
+    /* Custom Font */
+    @font-face {
+      font-family: 'CloudSansCode';
+      src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408@1.0/goorm-sans-code.woff2') format('woff2');
+      font-weight: 100 900;
+      font-display: swap;
+    }
+
+    /* ========================================
+       Reset & Base
+    ======================================== */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
 
-    body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-      min-height: 100vh;
-      color: #e4e4e4;
+    /* Accessibility - Focus Visible */
+    :focus-visible {
+      outline: 3px solid var(--primary-500);
+      outline-offset: 2px;
     }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    header {
-      text-align: center;
-      padding: 40px 0;
-    }
-
-    h1 {
-      font-size: 2.5rem;
-      background: linear-gradient(90deg, #00d9ff, #00ff88);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 10px;
-    }
-
-    .subtitle {
-      color: #888;
-      font-size: 1.1rem;
-    }
-
-    .main-content {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-top: 30px;
-    }
-
-    @media (max-width: 900px) {
-      .main-content {
-        grid-template-columns: 1fr;
+    /* Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
       }
     }
 
-    .panel {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 16px;
-      padding: 24px;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+    html {
+      scroll-behavior: smooth;
     }
 
-    .panel-title {
-      font-size: 1.2rem;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    body {
+      font-family: var(--font-primary);
+      font-size: var(--text-body);
+      font-weight: var(--font-regular);
+      line-height: 1.6;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      min-height: 100vh;
     }
 
-    .panel-title .icon {
-      font-size: 1.4rem;
-    }
-
-    textarea {
-      width: 100%;
-      height: 300px;
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
-      padding: 16px;
-      color: #e4e4e4;
-      font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
-      font-size: 14px;
-      resize: vertical;
-      transition: border-color 0.3s;
-    }
-
-    textarea:focus {
-      outline: none;
-      border-color: #00d9ff;
-    }
-
-    .file-upload {
-      margin-top: 16px;
-      padding: 20px;
-      border: 2px dashed rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-
-    .file-upload:hover, .file-upload:focus {
-      border-color: #00d9ff;
-      background: rgba(0, 217, 255, 0.05);
-      outline: none;
-    }
-
+    /* ========================================
+       Utility Classes
+    ======================================== */
     .sr-only {
       position: absolute;
       width: 1px;
@@ -123,64 +173,373 @@
       border: 0;
     }
 
-    .file-upload input {
-      display: none;
+    .container {
+      max-width: var(--container-max-width);
+      margin: 0 auto;
+      padding: 0 var(--container-padding);
     }
 
-    .file-upload .icon {
-      font-size: 2rem;
-      margin-bottom: 10px;
-    }
-
-    .analyze-btn {
-      width: 100%;
-      padding: 16px;
-      margin-top: 20px;
-      background: linear-gradient(90deg, #00d9ff, #00ff88);
-      border: none;
-      border-radius: 12px;
-      color: #1a1a2e;
-      font-size: 1.1rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s;
+    /* ========================================
+       Navigation Bar
+    ======================================== */
+    .navbar {
+      position: sticky;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--navbar-height);
+      background: var(--white);
+      box-shadow: var(--shadow-xs);
+      z-index: 100;
       display: flex;
       align-items: center;
+    }
+
+    .navbar .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .navbar-logo {
+      font-size: var(--text-h4);
+      font-weight: var(--font-bold);
+      color: var(--primary-500);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .navbar-logo:hover {
+      color: var(--primary-600);
+    }
+
+    .navbar-nav {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      list-style: none;
+    }
+
+    .navbar-link {
+      padding: var(--space-sm) var(--space-md);
+      font-size: var(--text-body);
+      font-weight: var(--font-bold);
+      color: var(--gray-600);
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      transition: all var(--duration-fast) var(--easing);
+    }
+
+    .navbar-link:hover,
+    .navbar-link.active {
+      color: var(--primary-500);
+    }
+
+    /* ========================================
+       Hero Section
+    ======================================== */
+    .hero {
+      padding: var(--space-4xl) 0;
+      text-align: center;
+    }
+
+    .hero-title {
+      font-size: var(--text-h1);
+      font-weight: var(--font-extrabold);
+      color: var(--gray-900);
+      margin-bottom: var(--space-md);
+      line-height: 1.1;
+    }
+
+    .hero-title .highlight {
+      color: var(--primary-500);
+      position: relative;
+    }
+
+    .hero-subtitle {
+      font-size: var(--text-body-lg);
+      color: var(--gray-500);
+      max-width: 700px;
+      margin: 0 auto var(--space-2xl);
+    }
+
+    /* ========================================
+       Alert / Warning Banner
+    ======================================== */
+    .alert {
+      padding: var(--space-md);
+      border-radius: var(--radius-md);
+      font-size: var(--text-body);
+      margin-bottom: var(--space-lg);
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-md);
+    }
+
+    .alert-warning {
+      background: #f3c81e;
+      box-shadow: 8px 8px 0px #dbac2c;
+      color: var(--gray-900);
+    }
+
+    .alert-info {
+      background: #b9b9b9;
+      box-shadow: 8px 8px 0px #767676;
+      color: var(--white);
+    }
+
+    .alert-icon {
+      font-size: var(--text-h4);
+      flex-shrink: 0;
+    }
+
+    .alert-content {
+      flex: 1;
+    }
+
+    .alert-title {
+      font-weight: var(--font-bold);
+      margin-bottom: var(--space-xs);
+    }
+
+    /* ========================================
+       Main Layout
+    ======================================== */
+    .main-section {
+      padding: var(--space-2xl) 0 var(--space-4xl);
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-lg);
+    }
+
+    /* ========================================
+       Cards
+    ======================================== */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      box-shadow: var(--shadow-sm);
+      transition: all var(--duration-slow) var(--easing);
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-10px);
+    }
+
+    .card-highlight {
+      border: 5px solid var(--primary-500);
+    }
+
+    .card-static {
+      transition: none;
+    }
+
+    .card-static:hover {
+      transform: none;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-md);
+    }
+
+    .card-icon {
+      font-size: var(--text-h3);
+    }
+
+    .card-title {
+      font-size: var(--text-h5);
+      font-weight: var(--font-semibold);
+      color: var(--gray-800);
+    }
+
+    /* ========================================
+       Buttons
+    ======================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: var(--space-sm);
+      padding: 10px 20px;
+      font-family: var(--font-primary);
+      font-size: var(--text-body);
+      font-weight: var(--font-semibold);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--duration-normal) var(--easing);
+      text-decoration: none;
+      border: none;
     }
 
-    .analyze-btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(0, 217, 255, 0.3);
+    .btn-primary {
+      background: var(--primary-500);
+      color: var(--white);
+      box-shadow: var(--shadow-xs);
     }
 
-    .analyze-btn:disabled {
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-600);
+      box-shadow: var(--shadow-sm);
+      transform: translateY(6px);
+    }
+
+    .btn-primary:active:not(:disabled) {
+      background: var(--primary-700);
+      transform: translateY(8px);
+      box-shadow: 0px 0px 0px rgba(0,0,0,0.2);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--primary-500);
+      border: 2px solid var(--primary-500);
+      padding: 10px 22px;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      box-shadow: var(--shadow-xs);
+      transform: translateY(-8px);
+    }
+
+    .btn-lg {
+      padding: 16px 32px;
+      font-size: var(--text-body-lg);
+    }
+
+    .btn-sm {
+      padding: 8px 16px;
+      font-size: var(--text-body-sm);
+    }
+
+    .btn-full {
+      width: 100%;
+    }
+
+    .btn:disabled {
       opacity: 0.6;
       cursor: not-allowed;
     }
 
+    /* ========================================
+       Form Elements
+    ======================================== */
+    .form-group {
+      margin-bottom: var(--space-md);
+    }
+
+    .form-label {
+      display: block;
+      font-size: var(--text-body-sm);
+      font-weight: var(--font-semibold);
+      color: var(--gray-700);
+      margin-bottom: var(--space-sm);
+    }
+
+    .form-input,
+    .form-textarea {
+      width: 100%;
+      background: var(--white);
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      font-family: var(--font-mono);
+      font-size: var(--text-body);
+      color: var(--gray-900);
+      transition: all var(--duration-normal) var(--easing);
+    }
+
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+      color: var(--gray-400);
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+      outline: none;
+      box-shadow: var(--shadow-xs);
+      transform: translateY(-8px);
+      border-color: var(--primary-500);
+    }
+
+    .form-textarea {
+      min-height: 300px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    /* ========================================
+       File Upload
+    ======================================== */
+    .file-upload {
+      margin-top: var(--space-md);
+      padding: var(--space-lg);
+      border: 2px dashed var(--gray-300);
+      border-radius: var(--radius-md);
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--duration-normal) var(--easing);
+    }
+
+    .file-upload:hover,
+    .file-upload:focus {
+      border-color: var(--primary-500);
+      background: var(--primary-50);
+      box-shadow: var(--shadow-xs);
+      transform: translateY(-8px);
+      outline: none;
+    }
+
+    .file-upload input {
+      display: none;
+    }
+
+    .file-upload-icon {
+      font-size: var(--text-h2);
+      margin-bottom: var(--space-sm);
+    }
+
+    .file-upload-text {
+      font-size: var(--text-body);
+      color: var(--gray-700);
+      margin-bottom: var(--space-xs);
+    }
+
+    .file-upload-hint {
+      font-size: var(--text-body-sm);
+      color: var(--gray-400);
+    }
+
+    /* ========================================
+       Result Panel
+    ======================================== */
     .result-panel {
-      height: 500px;
+      min-height: 500px;
       display: flex;
       flex-direction: column;
     }
 
-    .result-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-
     .result-content {
       flex: 1;
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 12px;
-      padding: 16px;
+      background: var(--gray-100);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
       overflow-y: auto;
-      font-size: 14px;
-      line-height: 1.6;
+      font-size: var(--text-body-sm);
+      line-height: 1.7;
+      max-height: 500px;
     }
 
     .result-content::-webkit-scrollbar {
@@ -188,80 +547,141 @@
     }
 
     .result-content::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 4px;
+      background: var(--gray-200);
+      border-radius: var(--radius-sm);
     }
 
     .result-content::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 4px;
+      background: var(--gray-400);
+      border-radius: var(--radius-sm);
     }
 
-    .thinking {
-      color: #888;
-      font-style: italic;
-      padding: 10px;
-      background: rgba(0, 217, 255, 0.1);
-      border-radius: 8px;
-      margin-bottom: 16px;
-      border-left: 3px solid #00d9ff;
+    .result-content::-webkit-scrollbar-thumb:hover {
+      background: var(--gray-500);
+    }
+
+    /* ========================================
+       Thinking Block
+    ======================================== */
+    .thinking-block {
+      background: var(--primary-50);
+      border-left: 4px solid var(--primary-500);
+      border-radius: var(--radius-sm);
+      padding: var(--space-md);
+      margin-bottom: var(--space-md);
     }
 
     .thinking-label {
-      color: #00d9ff;
-      font-weight: bold;
-      margin-bottom: 8px;
-      display: block;
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-weight: var(--font-bold);
+      color: var(--primary-600);
+      margin-bottom: var(--space-sm);
     }
 
-    .answer {
-      color: #e4e4e4;
+    .thinking-content {
+      color: var(--gray-600);
+      font-style: italic;
       white-space: pre-wrap;
+      word-break: break-word;
     }
 
+    /* ========================================
+       Answer Block
+    ======================================== */
+    .answer-block {
+      color: var(--gray-800);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* ========================================
+       Final Result
+    ======================================== */
     .final-result {
-      margin-top: 20px;
-      padding: 20px;
-      background: rgba(0, 0, 0, 0.4);
-      border-radius: 12px;
+      margin-top: var(--space-lg);
+      padding: var(--space-xl);
+      background: var(--white);
+      border-radius: var(--radius-lg);
       text-align: center;
+      border: 3px solid var(--gray-200);
+    }
+
+    .risk-label {
+      font-size: var(--text-h5);
+      font-weight: var(--font-semibold);
+      margin-bottom: var(--space-sm);
     }
 
     .risk-score {
-      font-size: 3rem;
-      font-weight: bold;
-      margin: 10px 0;
+      font-size: var(--text-display);
+      font-weight: var(--font-extrabold);
+      margin: var(--space-sm) 0;
+      font-family: var(--font-mono);
     }
 
-    .risk-low { color: #00ff88; }
-    .risk-medium { color: #ffcc00; }
-    .risk-high { color: #ff6b6b; }
-    .risk-critical { color: #ff0000; }
-
-    .risk-label {
-      font-size: 1.2rem;
-      margin-bottom: 10px;
+    .risk-low { 
+      color: var(--success); 
+    }
+    
+    .risk-medium { 
+      color: var(--warning); 
+    }
+    
+    .risk-high { 
+      color: #e55050;
+    }
+    
+    .risk-critical { 
+      color: var(--error); 
     }
 
     .risk-comment {
-      color: #888;
+      font-size: var(--text-body);
+      color: var(--gray-500);
       font-style: italic;
     }
 
+    /* ========================================
+       Empty State
+    ======================================== */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      min-height: 300px;
+      color: var(--gray-400);
+    }
+
+    .empty-state-icon {
+      font-size: 80px;
+      margin-bottom: var(--space-md);
+    }
+
+    .empty-state-text {
+      font-size: var(--text-body);
+    }
+
+    /* ========================================
+       Loading States
+    ======================================== */
     .loading {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      padding: 40px;
-      color: #888;
+      gap: var(--space-md);
+      padding: var(--space-2xl);
+      color: var(--gray-500);
     }
 
     .spinner {
-      width: 24px;
-      height: 24px;
-      border: 3px solid rgba(0, 217, 255, 0.3);
-      border-top-color: #00d9ff;
+      width: 28px;
+      height: 28px;
+      border: 4px solid var(--primary-100);
+      border-top-color: var(--primary-500);
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
@@ -270,82 +690,244 @@
       to { transform: rotate(360deg); }
     }
 
-    .empty-state {
-      display: flex;
-      flex-direction: column;
+    /* ========================================
+       Badges
+    ======================================== */
+    .badge {
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
-      height: 100%;
-      color: #666;
+      padding: var(--space-xs) 12px;
+      border-radius: var(--radius-full);
+      font-size: var(--text-body-sm);
+      font-weight: var(--font-medium);
     }
 
-    .empty-state .icon {
-      font-size: 4rem;
-      margin-bottom: 20px;
+    .badge-primary {
+      background: var(--primary-500);
+      color: var(--white);
     }
 
-    .warning-banner {
-      background: rgba(255, 107, 107, 0.1);
-      border: 1px solid rgba(255, 107, 107, 0.3);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
+    .badge-success {
+      background: #29c54d;
+      color: var(--white);
     }
 
-    .warning-banner .icon {
-      font-size: 1.5rem;
+    .badge-warning {
+      background: #f3c81e;
+      color: var(--white);
+    }
+
+    .badge-error {
+      background: #e12e2e;
+      color: var(--white);
+    }
+
+    /* ========================================
+       Footer
+    ======================================== */
+    .footer {
+      padding: var(--space-xl) 0;
+      text-align: center;
+      color: var(--gray-500);
+      font-size: var(--text-body-sm);
+      border-top: 1px solid var(--gray-200);
+      margin-top: var(--space-3xl);
+    }
+
+    /* ========================================
+       Error Message
+    ======================================== */
+    .error-message {
+      background: #fef2f2;
+      border: 2px solid var(--error);
+      border-radius: var(--radius-md);
+      padding: var(--space-lg);
+      color: var(--error);
+      text-align: center;
+    }
+
+    /* ========================================
+       Responsive Design
+    ======================================== */
+    @media (max-width: 1023px) {
+      :root {
+        --text-h1: 42px;
+        --text-h2: 32px;
+        --text-body-lg: 24px;
+      }
+
+      .main-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-md);
+      }
+    }
+
+    @media (max-width: 639px) {
+      :root {
+        --text-h1: 36px;
+        --text-h2: 28px;
+        --text-h3: 24px;
+        --text-body-lg: 20px;
+        --text-body: 18px;
+        --container-padding: var(--space-md);
+      }
+
+      .navbar-nav {
+        display: none;
+      }
+
+      .hero {
+        padding: var(--space-2xl) 0;
+      }
+
+      .hero-subtitle {
+        font-size: var(--text-body);
+      }
+
+      .main-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-lg);
+      }
+
+      .main-section {
+        padding: var(--space-lg) 0 var(--space-2xl);
+      }
+
+      .result-panel {
+        min-height: 400px;
+      }
+
+      .result-content {
+        max-height: 400px;
+      }
+
+      .form-textarea {
+        min-height: 200px;
+      }
+
+      .risk-score {
+        font-size: 56px;
+      }
+
+      .final-result {
+        padding: var(--space-lg);
+      }
+
+      .card {
+        padding: var(--space-md);
+      }
+
+      .card:hover {
+        transform: none;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>🔒 코드 보안 분석기</h1>
-      <p class="subtitle">AI가 코드를 분석하여 계정에 피해를 줄 수 있는 악성 코드를 탐지합니다</p>
-    </header>
-
-    <div class="warning-banner">
-      <span class="icon">⚠️</span>
-      <div>
-        <strong>주의:</strong> 이 도구는 AI 기반 분석을 제공하며, 100% 정확한 탐지를 보장하지 않습니다. 
-        의심스러운 코드는 실행하지 마세요.
-      </div>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="#" class="navbar-logo">
+        <span>🛡️</span>
+        <span>코드 보안 분석기</span>
+      </a>
+      <ul class="navbar-nav">
+        <li><a href="#analyzer" class="navbar-link active">분석하기</a></li>
+      </ul>
     </div>
+  </nav>
 
-    <div class="main-content">
-      <div class="panel">
-        <h2 class="panel-title"><span class="icon">📝</span> 코드 입력</h2>
-        <label for="codeInput" class="sr-only">분석할 코드 입력</label>
-        <textarea id="codeInput" aria-label="분석할 코드를 입력하세요" placeholder="분석할 코드를 여기에 붙여넣으세요..."></textarea>
-        
-        <div class="file-upload" tabindex="0" role="button" aria-label="파일 업로드" id="fileUploadArea">
-          <input type="file" id="fileInput" accept=".js,.ts,.jsx,.tsx,.py,.php,.html,.css,.json,.txt" aria-label="코드 파일 선택">
-          <div class="icon">📁</div>
-          <div id="fileUploadText">파일을 선택하거나 여기에 드래그하세요</div>
-          <div style="color: #666; font-size: 0.9rem; margin-top: 5px;">지원: .js, .ts, .jsx, .tsx, .py, .php, .html, .css, .json, .txt</div>
-        </div>
-        
-        <button class="analyze-btn" id="analyzeBtn">
-          <span>🔍</span> 분석 시작
-        </button>
+  <main>
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="container">
+        <h1 class="hero-title">
+          AI로 <span class="highlight">악성 코드</span>를<br>탐지하세요
+        </h1>
+        <p class="hero-subtitle">
+          DeepSeek AI가 코드를 분석하여 계정 탈취, 데이터 유출 등 잠재적 위협을 탐지합니다
+        </p>
       </div>
+    </section>
 
-      <div class="panel result-panel">
-        <div class="result-header">
-          <h2 class="panel-title"><span class="icon">📊</span> 분석 결과</h2>
+    <!-- Main Content -->
+    <section class="main-section" id="analyzer">
+      <div class="container">
+        <!-- Warning Banner -->
+        <div class="alert alert-warning">
+          <span class="alert-icon">⚠️</span>
+          <div class="alert-content">
+            <div class="alert-title">주의사항</div>
+            <div>이 도구는 AI 기반 분석을 제공하며, 100% 정확한 탐지를 보장하지 않습니다. 의심스러운 코드는 절대 실행하지 마세요.</div>
+          </div>
         </div>
-        <div class="result-content" id="resultContent" aria-live="polite" aria-atomic="false">
-          <div class="empty-state">
-            <div class="icon">🔐</div>
-            <div>코드를 입력하고 분석을 시작하세요</div>
+
+        <div class="main-grid">
+          <!-- Input Panel -->
+          <div class="card card-highlight card-static">
+            <div class="card-header">
+              <span class="card-icon">📝</span>
+              <h2 class="card-title">코드 입력</h2>
+            </div>
+            
+            <div class="form-group">
+              <label for="codeInput" class="sr-only">분석할 코드 입력</label>
+              <textarea 
+                id="codeInput" 
+                class="form-textarea" 
+                placeholder="분석할 코드를 여기에 붙여넣으세요..."
+                aria-label="분석할 코드를 입력하세요"
+              ></textarea>
+            </div>
+
+            <div 
+              class="file-upload" 
+              tabindex="0" 
+              role="button" 
+              aria-label="파일 업로드" 
+              id="fileUploadArea"
+            >
+              <input 
+                type="file" 
+                id="fileInput" 
+                accept=".js,.ts,.jsx,.tsx,.py,.php,.html,.css,.json,.txt" 
+                aria-label="코드 파일 선택"
+              >
+              <div class="file-upload-icon">📁</div>
+              <div class="file-upload-text" id="fileUploadText">파일을 드래그하거나 클릭하여 업로드</div>
+              <div class="file-upload-hint">.js, .ts, .jsx, .tsx, .py, .php, .html, .css, .json, .txt</div>
+            </div>
+
+            <button class="btn btn-primary btn-lg btn-full" id="analyzeBtn" style="margin-top: var(--space-lg);">
+              <span>🔍</span>
+              <span>분석 시작</span>
+            </button>
+          </div>
+
+          <!-- Result Panel -->
+          <div class="card result-panel card-static">
+            <div class="card-header">
+              <span class="card-icon">📊</span>
+              <h2 class="card-title">분석 결과</h2>
+            </div>
+            <div class="result-content" id="resultContent" aria-live="polite" aria-atomic="false">
+              <div class="empty-state">
+                <div class="empty-state-icon">🔐</div>
+                <div class="empty-state-text">코드를 입력하고 분석을 시작하세요</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>© 2024 코드 보안 분석기 · AI 기반 보안 분석 도구</p>
     </div>
-  </div>
+  </footer>
 
   <script>
     (function() {
@@ -355,50 +937,56 @@
       var resultContent = document.getElementById("resultContent");
       var fileUploadArea = document.getElementById("fileUploadArea");
 
+      // File upload click handler
       fileUploadArea.addEventListener("click", function() {
         fileInput.click();
       });
 
+      // Keyboard accessibility for file upload
       fileUploadArea.addEventListener("keypress", function(e) {
         if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
           fileInput.click();
         }
       });
 
+      // File input change handler
       fileInput.addEventListener("change", function(e) {
         var file = e.target.files[0];
         if (file) {
           file.text().then(function(text) {
             codeInput.value = text;
-            document.getElementById("fileUploadText").textContent = "📄 " + file.name + " 로드됨";
+            document.getElementById("fileUploadText").textContent = "✅ " + file.name + " 로드됨";
           });
         }
       });
 
+      // Drag and drop handlers
       fileUploadArea.addEventListener("dragover", function(e) {
         e.preventDefault();
-        fileUploadArea.style.borderColor = "#00d9ff";
-        fileUploadArea.style.background = "rgba(0, 217, 255, 0.1)";
+        fileUploadArea.style.borderColor = "var(--primary-500)";
+        fileUploadArea.style.background = "var(--primary-50)";
       });
 
       fileUploadArea.addEventListener("dragleave", function() {
-        fileUploadArea.style.borderColor = "rgba(255, 255, 255, 0.2)";
-        fileUploadArea.style.background = "transparent";
+        fileUploadArea.style.borderColor = "";
+        fileUploadArea.style.background = "";
       });
 
       fileUploadArea.addEventListener("drop", function(e) {
         e.preventDefault();
-        fileUploadArea.style.borderColor = "rgba(255, 255, 255, 0.2)";
-        fileUploadArea.style.background = "transparent";
+        fileUploadArea.style.borderColor = "";
+        fileUploadArea.style.background = "";
         var file = e.dataTransfer.files[0];
         if (file) {
           file.text().then(function(text) {
             codeInput.value = text;
-            document.getElementById("fileUploadText").textContent = "📄 " + file.name + " 로드됨";
+            document.getElementById("fileUploadText").textContent = "✅ " + file.name + " 로드됨";
           });
         }
       });
 
+      // Analyze button click handler
       analyzeBtn.addEventListener("click", function() {
         analyzeCode();
       });
@@ -412,9 +1000,9 @@
         }
 
         analyzeBtn.disabled = true;
-        analyzeBtn.innerHTML = '<span class="spinner"></span> 분석 중...';
+        analyzeBtn.innerHTML = '<span class="spinner"></span> <span>분석 중...</span>';
         
-        resultContent.innerHTML = '<div class="loading"><span class="spinner"></span> AI가 코드를 분석하고 있습니다...</div>';
+        resultContent.innerHTML = '<div class="loading"><span class="spinner"></span> <span>AI가 코드를 분석하고 있습니다...</span></div>';
 
         var reasoningText = "";
         var answerText = "";
@@ -481,11 +1069,11 @@
           return processStream();
         })
         .catch(function(error) {
-          resultContent.innerHTML = '<div style="color: #ff6b6b; padding: 20px;">❌ ' + escapeHtml(error.message) + '</div>';
+          resultContent.innerHTML = '<div class="error-message">❌ ' + escapeHtml(error.message) + '</div>';
         })
         .finally(function() {
           analyzeBtn.disabled = false;
-          analyzeBtn.innerHTML = '<span>🔍</span> 분석 시작';
+          analyzeBtn.innerHTML = '<span>🔍</span> <span>분석 시작</span>';
         });
       }
 
@@ -493,14 +1081,14 @@
         var html = "";
 
         if (reasoning) {
-          html += '<div class="thinking">';
-          html += '<span class="thinking-label">🧠 AI 사고 과정</span>';
-          html += '<div>' + escapeHtml(reasoning) + '</div>';
+          html += '<div class="thinking-block">';
+          html += '<div class="thinking-label"><span>🧠</span> <span>AI 사고 과정</span></div>';
+          html += '<div class="thinking-content">' + escapeHtml(reasoning) + '</div>';
           html += '</div>';
         }
 
         if (answer) {
-          html += '<div class="answer">' + escapeHtml(answer) + '</div>';
+          html += '<div class="answer-block">' + escapeHtml(answer) + '</div>';
         }
 
         if (isFinal && answer) {
@@ -510,7 +1098,7 @@
           }
         }
 
-        resultContent.innerHTML = html || '<div class="loading"><span class="spinner"></span> 분석 중...</div>';
+        resultContent.innerHTML = html || '<div class="loading"><span class="spinner"></span> <span>분석 중...</span></div>';
         resultContent.scrollTop = resultContent.scrollHeight;
       }
 
@@ -528,25 +1116,25 @@
 
       function renderFinalResult(result) {
         var riskClass = "risk-low";
-        var riskLabel = "✓ 안전";
+        var riskLabel = "✅ 안전";
         
         if (result.score > 80) {
           riskClass = "risk-critical";
-          riskLabel = "✗ 매우 위험";
+          riskLabel = "🚨 매우 위험";
         } else if (result.score > 60) {
           riskClass = "risk-high";
-          riskLabel = "⚠ 높은 위험";
+          riskLabel = "⚠️ 높은 위험";
         } else if (result.score > 40) {
           riskClass = "risk-medium";
-          riskLabel = "⚠ 중간 위험";
+          riskLabel = "⚠️ 중간 위험";
         } else if (result.score > 20) {
           riskClass = "risk-medium";
-          riskLabel = "△ 낮은 위험";
+          riskLabel = "⚡ 낮은 위험";
         }
 
         return '<div class="final-result">' +
           '<div class="risk-label">' + riskLabel + '</div>' +
-          '<div class="risk-score ' + riskClass + '">' + result.score + '/100</div>' +
+          '<div class="risk-score ' + riskClass + '">' + result.score + '<span style="font-size: 0.4em; opacity: 0.7;">/100</span></div>' +
           '<div class="risk-comment">"' + escapeHtml(result.comment) + '"</div>' +
         '</div>';
       }
