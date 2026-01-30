@@ -19,6 +19,17 @@ function extractExternalUrls(code) {
     /import\s*\(\s*["'`]([^"'`]+)["'`]/gi,
     // $.getScript("...") jQuery
     /\$\.getScript\s*\(\s*["'`]([^"'`]+)["'`]/gi,
+    // $.get("..."), $.post("..."), $.ajax({url: "..."}) jQuery
+    /\$\.get\s*\(\s*["'`]([^"'`]+)["'`]/gi,
+    /\$\.post\s*\(\s*["'`]([^"'`]+)["'`]/gi,
+    /\$\.ajax\s*\(\s*[{][^}]*url\s*:\s*["'`]([^"'`]+)["'`]/gi,
+    // jQuery.get, jQuery.post, jQuery.ajax
+    /jQuery\.get\s*\(\s*["'`]([^"'`]+)["'`]/gi,
+    /jQuery\.post\s*\(\s*["'`]([^"'`]+)["'`]/gi,
+    /jQuery\.ajax\s*\(\s*[{][^}]*url\s*:\s*["'`]([^"'`]+)["'`]/gi,
+    // axios("..."), axios.get("..."), axios.post("...")
+    /axios\s*\(\s*["'`]([^"'`]+)["'`]/gi,
+    /axios\.(?:get|post|put|delete|patch)\s*\(\s*["'`]([^"'`]+)["'`]/gi,
     // .src = "..." 속성 설정
     /\.src\s*=\s*["'`]([^"'`]+)["'`]/gi,
     // new Image().src 또는 img.src
@@ -29,6 +40,8 @@ function extractExternalUrls(code) {
     /document\.write\s*\([^)]*<script[^>]*src\s*=\s*\\?["']([^"'\\]+)\\?["']/gi,
     // loadScript, appendScript 등의 함수 호출
     /(?:load|append|inject|add)Script\s*\(\s*["'`]([^"'`]+)["'`]/gi,
+    // eval($.get(...)), eval(fetch(...)) 등 eval로 실행하는 패턴
+    /eval\s*\(\s*(?:\$\.get|fetch)\s*\(\s*["'`]([^"'`]+)["'`]/gi,
   ];
   
   for (const pattern of patterns) {
