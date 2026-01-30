@@ -11,6 +11,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
   
+  <!-- JSZip for handling zip files -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg==" crossorigin="anonymous"></script>
+  
   <style>
     /* ========================================
        CSS Variables - Design System
@@ -992,13 +995,13 @@
                     <input 
                       type="file" 
                       id="fileInput" 
-                      accept=".js,.ts,.jsx,.tsx,.py,.php,.html,.css,.json,.txt" 
+                      accept=".js,.ts,.jsx,.tsx,.py,.php,.html,.css,.json,.txt,.zip" 
                       aria-label="코드 파일 선택"
                       multiple
                     >
                     <div class="file-upload-icon">📁</div>
                     <div class="file-upload-text" id="fileUploadText">파일을 드래그하거나 클릭하여 업로드</div>
-                    <div class="file-upload-hint">.js, .ts, .jsx, .tsx, .py, .php, .html, .css, .json, .txt, .rs, .cpp, .go, .rb, .cs, .yaml, .yml</div>
+                    <div class="file-upload-hint">.js, .ts, .jsx, .tsx, .py, .php, .html, .css, .json, .txt, .zip (자동 압축 해제)</div>
                     <div class="file-list" id="fileList"></div>
                   </div>
                 </div>
@@ -1142,21 +1145,85 @@
         }
       }
 
+      // Supported file extensions for code analysis
+      var supportedExtensions = ['.js', '.ts', '.jsx', '.tsx', '.py', '.php', '.html', '.css', '.json', '.txt', '.rs', '.cpp', '.go', '.rb', '.cs', '.yaml', '.yml', '.c', '.h', '.java', '.kt', '.swift', '.sh', '.bash', '.sql', '.xml', '.md'];
+
+      // Check if file extension is supported
+      function isSupportedFile(filename) {
+        var ext = filename.toLowerCase().substring(filename.lastIndexOf('.'));
+        return supportedExtensions.indexOf(ext) !== -1;
+      }
+
+      // Process a zip file and extract its contents
+      function processZipFile(file) {
+        return JSZip.loadAsync(file).then(function(zip) {
+          var extractPromises = [];
+          
+          zip.forEach(function(relativePath, zipEntry) {
+            // Skip directories and hidden files
+            if (zipEntry.dir || relativePath.startsWith('__MACOSX') || 
+                relativePath.split('/').some(function(part) { return part.startsWith('.'); })) {
+              return;
+            }
+            
+            // Only process supported file types
+            if (isSupportedFile(relativePath)) {
+              extractPromises.push(
+                zipEntry.async('text').then(function(content) {
+                  return {
+                    name: relativePath,
+                    content: content
+                  };
+                })
+              );
+            }
+          });
+          
+          return Promise.all(extractPromises);
+        });
+      }
+
       // Function to process multiple files
       function processFiles(files) {
         if (!files || files.length === 0) return;
         
         var fileArray = Array.from(files);
+        var allFilesPromises = [];
         
-        // Read all files and combine their contents
-        Promise.all(fileArray.map(function(file) {
-          return file.text().then(function(text) {
-            return {
-              name: file.name,
-              content: text
-            };
+        fileArray.forEach(function(file) {
+          var ext = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+          
+          if (ext === '.zip') {
+            // Handle zip file
+            allFilesPromises.push(processZipFile(file));
+          } else {
+            // Handle regular file
+            allFilesPromises.push(
+              file.text().then(function(text) {
+                return [{
+                  name: file.name,
+                  content: text
+                }];
+              })
+            );
+          }
+        });
+        
+        // Wait for all files (including zip extraction) to complete
+        Promise.all(allFilesPromises).then(function(resultsArrays) {
+          // Flatten the results array
+          var results = [];
+          resultsArrays.forEach(function(arr) {
+            arr.forEach(function(item) {
+              results.push(item);
+            });
           });
-        })).then(function(results) {
+          
+          if (results.length === 0) {
+            alert('지원되는 코드 파일이 없습니다.');
+            return;
+          }
+          
           // Combine all file contents with file name separators
           var combinedContent = results.map(function(result) {
             return "// ===== " + result.name + " =====\n" + result.content;
@@ -1167,6 +1234,9 @@
           
           // Update UI
           updateFileListUI();
+        }).catch(function(error) {
+          console.error('Error processing files:', error);
+          alert('파일 처리 중 오류가 발생했습니다: ' + error.message);
         });
       }
 
