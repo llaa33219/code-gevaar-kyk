@@ -682,7 +682,7 @@
     ======================================== */
     .thinking-block {
       background: var(--primary-50);
-      border-left: 4px solid var(--primary-500);
+      border: 4px solid var(--primary-500);
       border-radius: var(--radius-sm);
       padding: var(--space-md);
       margin-bottom: var(--space-md);
@@ -1121,7 +1121,7 @@
       function updateFileListUI() {
         if (loadedFiles.length === 0) {
           fileList.innerHTML = "";
-          document.getElementById("fileUploadText").textContent = "파일을 드래그하거나 클릭하여 업로드";
+          document.getElementById("fileUploadText").textContent = "파일을 드래그하거나 클릭하여 첨부";
           return;
         }
 
@@ -1135,9 +1135,9 @@
         fileList.innerHTML = html;
         
         if (loadedFiles.length === 1) {
-          document.getElementById("fileUploadText").textContent = "✅ 1개 파일 로드됨";
+          document.getElementById("fileUploadText").textContent = "✅ 1개 파일 첨부됨";
         } else {
-          document.getElementById("fileUploadText").textContent = "✅ " + loadedFiles.length + "개 파일 로드됨";
+          document.getElementById("fileUploadText").textContent = "✅ " + loadedFiles.length + "개 파일 첨부됨";
         }
       }
 
@@ -1290,7 +1290,7 @@
         })
         .finally(function() {
           analyzeBtn.disabled = false;
-          analyzeBtn.innerHTML = '<span>🔍</span> <span>분석 시작</span>';
+          analyzeBtn.innerHTML = '<span>분석 시작</span>';
         });
       }
 
@@ -1299,7 +1299,7 @@
 
         if (reasoning) {
           html += '<div class="thinking-block">';
-          html += '<div class="thinking-label"><span>🧠</span> <span>AI 사고 과정</span></div>';
+          html += '<div class="thinking-label"> <span>추론 과정</span></div>';
           html += '<div class="thinking-content">' + escapeHtml(reasoning) + '</div>';
           html += '</div>';
         }
@@ -1333,20 +1333,20 @@
 
       function renderFinalResult(result) {
         var riskClass = "risk-low";
-        var riskLabel = "✅ 안전";
+        var riskLabel = "✅ 위험하지 않음";
         
         if (result.score > 80) {
           riskClass = "risk-critical";
-          riskLabel = "🚨 매우 위험";
+          riskLabel = "⛔ 매우 위험";
         } else if (result.score > 60) {
           riskClass = "risk-high";
           riskLabel = "⚠️ 높은 위험";
         } else if (result.score > 40) {
           riskClass = "risk-medium";
-          riskLabel = "⚠️ 중간 위험";
+          riskLabel = "‼️ 중간 위험";
         } else if (result.score > 20) {
           riskClass = "risk-medium";
-          riskLabel = "⚡ 낮은 위험";
+          riskLabel = "☑️ 낮은 위험";
         }
 
         return '<div class="final-result">' +
