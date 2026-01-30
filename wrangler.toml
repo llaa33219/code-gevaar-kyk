@@ -1,6 +1,6 @@
 name = "code-gevaar-kyk"
 main = "src/worker.js"
-compatibility_date = "2025-1-30"
+compatibility_date = "2025-1-20"
 
 [vars]
 # DeepSeek API 키는 Cloudflare Dashboard에서 Secrets로 설정하세요
