@@ -247,13 +247,6 @@ export default {
           });
         }
 
-        if (code.length > 100000) {
-          return new Response(JSON.stringify({ error: '코드가 너무 깁니다. (최대 100,000자)' }), {
-            status: 400,
-            headers: { 'Content-Type': 'application/json', ...corsHeaders },
-          });
-        }
-
         // DeepSeek API 호출 (스트리밍)
         const deepseekResponse = await fetch(DEEPSEEK_API_URL, {
           method: 'POST',
